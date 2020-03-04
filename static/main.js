@@ -15,9 +15,9 @@ darkThemeBtn.addEventListener("click", (event) => {
     }
 });
 
-async function createList(parent, prefix = "") {
+async function createList(parent, prefix = "", count = "") {
     
-    const roots = await request("GET", "/api/query?root=" + prefix); //findRoots(items, prefix)
+    const roots = await request("GET", "/api/query?root=" + prefix + "&limit=" + count); //findRoots(items, prefix)
         
     const ul = document.createElement("ul");
     roots
@@ -49,7 +49,7 @@ function createListElement(item) {
         if(item.count > 1) { // has children
              if(!open) {
                 open = true;
-                createList(li, item.val).catch(console.error);
+                createList(li, item.val, item.count).catch(console.error);
             } else {
                 open = false;
                 li.getElementsByTagName('ul')[0].remove();

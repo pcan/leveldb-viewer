@@ -1,9 +1,38 @@
 const http = require('http');
 const url = require('url');
 const fs = require('fs');
+const stream = require('stream');
+
+module.exports = { createViewerServer }
 
 
-http.createServer(function (request, response) {
+function createViewerServer(db) {
+    
+    const server = http.createServer(function (request, response) {
+    
+        if(request.url.indexOf('/api') === 0) {
+            api(request, response, db).catch(console.error);
+        } else {
+            serveStaticContent(request, response);
+        }
+           
+    });
+    
+    
+    /*function start() {
+        return new Promise((res, rej) => server.listen(options, (err) => (err ? rej(err) : res())));
+    }
+    
+    function stop() {
+        return new Promise((res, rej) => server.close((err) => (err ? rej(err) : res())));
+    }*/
+    
+    return server;
+    
+}
+
+
+/*http.createServer(function (request, response) {
     
     if(request.url.indexOf('/api') === 0) {
         api(request, response).catch(console.error);
@@ -11,7 +40,7 @@ http.createServer(function (request, response) {
         serveStaticContent(request, response);
     }
        
-}).listen(8080);
+}).listen(8080);*/
 
 function serveStaticContent(req, res) {
     if(req.url === '/' || req.url === '') {
@@ -33,45 +62,151 @@ function serveStaticContent(req, res) {
 
 
 
-async function api(req, res) {
-    const end = (v) => res.end(JSON.stringify(v));
+async function api(req, res, db) {
     res.setHeader('Content-Type', 'application/json');
     try {
         const reqUrl = url.parse(req.url, /* parseQueryString: */ true);
         if(req.method === 'GET') {
             switch(reqUrl.pathname) {
                 case '/api/query':                    
-                    end(await query(reqUrl));
+                    await query(reqUrl, res, db);
                     break;
                 case '/api/value':
-                    end(await retrieveValue(reqUrl));
+                    await retrieveValue(reqUrl, res, db);
                     break;
+                default:
+                    res.statusCode = 404;
+                    res.end();
             }
         } 
     } catch(e) {
         res.statusCode = 500;
+        res.end();
         throw e;
-    } finally {
-        end({});
     }
 }
 
-async function query(reqUrl) {
+async function query(reqUrl, res, db) {
     const q = reqUrl.query || {};
-    
     if (typeof q.root === 'string') {
-        return findRoots(stream, q.root);
-    } 
-    return reqUrl.query;
+        const limit = parseInt( typeof q.limit === 'string' ? q.limit : -1, 10);
+        db.createKeyStream({gte: q.root, limit: isFinite(limit) ? limit : -1 })
+                .pipe(new stream.Transform(filterByRoot(q.root)))
+                .pipe(new stream.Transform(jsonArrayTransform))
+                .pipe(res);
+        
+    } else {
+        res.end();
+    }    
 }
 
-async function retrieveValue(reqUrl) {
+
+async function retrieveValue(reqUrl, res, db) {
     const q = reqUrl.query || {};
     if(q.key) {
-        return {abc:[{def: 44,ababa:'ababa'}], fdf:true,abcsd:null};
+        try {
+            res.end(JSON.stringify(await db.get(q.key)));
+        } catch(e) {
+            console.log(e);
+            res.statusCode = 404;
+            res.end();
+        }
     }
 }
 
+
+function filterByRoot(root = "") {
+    
+    let commonRoot;
+    const start = root.length;
+    
+    return {
+        objectMode: true,
+        transform(chunk, _encoding, next) {
+            if(!commonRoot) { // first item always accepted
+                commonRoot = {val: chunk, count: 1};
+                //next(null, commonRoot);
+                next();
+                //console.log('accepted', chunk)
+            } else {
+                const idx = commonRadixIndex(commonRoot.val, chunk, start);
+                if (idx > start) { // same group                    
+                    commonRoot.val = commonRoot.val.substring(0, idx + 1);
+                    commonRoot.count++;
+                    //console.log('rejected', chunk)
+                    next(); // chunk filtered out, it's a child
+                } else { // new group detected                    
+                    next(null, commonRoot); // send previous group
+                    commonRoot = { val: chunk, count : 1};
+                    //console.log('accepted', chunk)
+                }
+            }            
+        },
+        flush(done) {
+            done(null, commonRoot); // send last
+        }
+    };
+    
+}
+
+function commonRadixIndex(a, b, start) {
+    let i = start;
+    for(; i < a.length && i < b.length && a[i] === b[i]; i++);
+    return i - 1;
+}
+
+
+
+const jsonArrayTransform = {
+    objectMode: true,
+    transform(chunk, _encoding, next) {
+        if (!this.started) {
+            this.started = true;
+            this.push('[' /* '[\n'*/);
+            this.push(JSON.stringify(chunk));
+        } else {
+            this.push(',' /* ',\n'*/)
+            this.push(JSON.stringify(chunk));
+        }
+        next();
+    },
+    flush(done) {
+        if (!this.started) {
+            this.push('[' /* '[\n'*/);
+        }
+        this.push(']' /* '\n]'*/);
+        done();
+    }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
 const stream = [
     "abc:000:3756",
     "abc:000:5867",
@@ -89,7 +224,11 @@ const stream = [
 
 //console.log(findRoots(stream, "abc:00"));
 
-function findRoots(stream, root = "") {
+function findRoots(db, root = "") {
+    
+    let commonRoot;
+    
+ 
     if(stream.length == 0) {
         return [];
     }
@@ -112,6 +251,7 @@ function findRoots(stream, root = "") {
     }
     
     return roots;
+    
 }
 
 function commonRadixIndex(a, b, start) {
@@ -119,6 +259,6 @@ function commonRadixIndex(a, b, start) {
     for(; i < a.length && i < b.length && a[i] === b[i]; i++);
     return i - 1;
 }
-
+*/
 
 
