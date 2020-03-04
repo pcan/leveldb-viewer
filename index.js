@@ -2,7 +2,6 @@ const http = require('http');
 const url = require('url');
 const fs = require('fs');
 
-var file = new nodeStatic.Server('./static');
 
 http.createServer(function (request, response) {
     
