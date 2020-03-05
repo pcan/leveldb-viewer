@@ -1,6 +1,6 @@
 {
   "name": "@pcan/leveldb-viewer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "LevelDB Viewer Application",
   "main": "index.js",
   "scripts": {
@@ -23,7 +23,9 @@
     "full-trace": true,
     "bail": true,
     "slow": 100,
-    "spec": ["test/**/*.test.js"]
+    "spec": [
+      "test/**/*.test.js"
+    ]
   },
   "author": "Pierantonio Cangianiello",
   "license": "MIT",
