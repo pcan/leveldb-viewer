@@ -19,28 +19,10 @@ function createViewerServer(db) {
     });
     
     
-    /*function start() {
-        return new Promise((res, rej) => server.listen(options, (err) => (err ? rej(err) : res())));
-    }
-    
-    function stop() {
-        return new Promise((res, rej) => server.close((err) => (err ? rej(err) : res())));
-    }*/
-    
     return server;
     
 }
 
-
-/*http.createServer(function (request, response) {
-    
-    if(request.url.indexOf('/api') === 0) {
-        api(request, response).catch(console.error);
-    } else {
-        serveStaticContent(request, response);
-    }
-       
-}).listen(8080);*/
 
 function serveStaticContent(req, res) {
     if(req.url === '/' || req.url === '') {
@@ -131,7 +113,7 @@ function filterByRoot(root = "") {
             } else {
                 const idx = commonRadixIndex(commonRoot.val, chunk, start);
                 if (idx > start) { // same group                    
-                    commonRoot.val = commonRoot.val.substring(0, idx + 1);
+                    commonRoot.val = commonRoot.val.slice(0, idx + 1);
                     commonRoot.count++;
                     //console.log('rejected', chunk)
                     next(); // chunk filtered out, it's a child
@@ -148,6 +130,9 @@ function filterByRoot(root = "") {
     };
     
 }
+
+
+
 
 function commonRadixIndex(a, b, start) {
     let i = start;

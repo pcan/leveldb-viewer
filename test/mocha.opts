@@ -1,4 +1,0 @@
---colors
---full-trace
---bail
-test/**/*.test.js
