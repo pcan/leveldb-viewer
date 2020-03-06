@@ -31,13 +31,25 @@ html body {
     flex-direction: row;
 }
 
-.value-view {
-    flex-grow:1;
-    flex-direction: column;
+.key-tree {
+    flex-basis: 30%;
+    /*flex-shrink: 2;*/
+    /*flex-grow:0;*/
     overflow-y:auto;
+    height: 100%;    
+    /*background-color:rgba(150,20,20,.45);*/   
+}
+
+.value-view {
+    flex-basis: 100%;
+    /*flex-shrink: 1;*/
+    /*flex-grow: 1;*/
+    flex-direction: column;
+    overflow-wrap: break-word;
+    overflow-y: auto;
     border-left: 1px solid #ccc;
     padding: 0.5em;
-    white-space: pre;
+    white-space: pre-wrap;
     color: #333;
     /*background-color:rgba(25,20,250,.45);*/
 }
@@ -97,14 +109,6 @@ html body {
 .dark-theme .value-view .boolean { color: #5df; }
 .dark-theme .value-view .null { color: #d5d; }
 .dark-theme .value-view .key { color: #f47; }
-
-
-.key-tree {
-    flex-grow:0;
-    overflow-y:auto;
-    height: 100%;    
-    /*background-color:rgba(150,20,20,.45);*/   
-}
 
 .key-tree>ul {
     margin: 0.5em 1.5em;
