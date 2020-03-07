@@ -3,6 +3,7 @@
   "version": "0.1.1",
   "description": "LevelDB Viewer Application",
   "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -35,6 +36,8 @@
   "homepage": "https://github.com/pcan/leveldb-viewer#readme",
   "dependencies": {},
   "devDependencies": {
+    "@types/node": "^10",
+    "@types/levelup": "^4",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "encoding-down": "^6.3.0",

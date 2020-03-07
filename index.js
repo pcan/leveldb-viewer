@@ -118,20 +118,25 @@ function filterByRoot(root = "") {
                     //console.log('rejected', chunk)
                     next(); // chunk filtered out, it's a child
                 } else { // new group detected                    
-                    next(null, commonRoot); // send previous group
+                    next(null, chunkValueToString(commonRoot)); // send previous group
                     commonRoot = { val: chunk, count : 1};
                     //console.log('accepted', chunk)
                 }
             }            
         },
         flush(done) {
-            done(null, commonRoot); // send last
+            done(null, chunkValueToString(commonRoot)); // send last
         }
     };
     
 }
 
-
+function chunkValueToString(chunk) {
+    if(chunk.val instanceof Buffer) {
+        chunk.val = chunk.val.toString('utf8');
+    }
+    return chunk;
+}
 
 
 function commonRadixIndex(a, b, start) {
