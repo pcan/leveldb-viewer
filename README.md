@@ -4,9 +4,13 @@ A simple, minimalistic, web-based LevelDB viewer for Node.js.
 
 ## Usage
 
-Install the module with `npm i --save leveldb-viewer`. The following snippet shows the sample usage:
+Install the module with `npm i --save @pcan/leveldb-viewer`. The following snippet shows the sample usage:
+
 ```javascript
-const { createViewerServer } = require('leveldb-viewer');
+const { createViewerServer } = require('@pcan/leveldb-viewer');
+const leveldown = require('leveldown');
+const levelup = require('levelup');
+const encode = require('encoding-down');
 const db = levelup(encode(leveldown('/path/to/db'), { keyEncoding: 'buffer', valueEncoding: 'json' })); 
 const server = createViewerServer(db); // This returns a Node.JS HttpServer.
 server.listen(9090); // you may invoke listen...
